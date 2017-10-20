@@ -11,13 +11,18 @@ package com.tomitribe.tomahawk;
 
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
+import java.net.JarURLConnection;
+import java.util.Date;
 
-public final class Tomahawk {
-    private Tomahawk() {
+public final class TomahawkAgent {
+    private TomahawkAgent() {
     }
 
     public static void premain(String agentArgs, Instrumentation instrumentation) throws IOException {
-        System.out.println("Tomitribe Tomahawk installed. Will attempt to log TLS secrets");
+        System.out.println(String.format("%s TomahawkAgent: TomahawkAgent installed. Will attempt to log TLS secrets",
+                                         new Date().toString()));
+        JarURLConnection connection = (JarURLConnection) TomahawkAgent.class.getResource("TomahawkAgent.class").openConnection();
+        instrumentation.appendToBootstrapClassLoaderSearch(connection.getJarFile());
         instrumentation.addTransformer(new TomahawkTransformer());
     }
 }
