@@ -11,7 +11,6 @@ export JAVA_OPTS="$JAVA_OPTS -javaagent:/PATH/TO/tomahawk-1.0.0-shaded.jar"
 ## Configuration
 
 By default, the log file will be written to `~/ssl.log`. You can customize this by adding a system property `-DTomahawkAgent.logfile=/path/to/ssl.log` 
-```
 
 ## Running
 
