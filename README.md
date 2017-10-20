@@ -31,3 +31,14 @@ Fri Oct 20 11:14:09 CDT 2017 TomahawkAgent: '-DTomahawkAgent.logfile=...' proper
 # Fri Oct 20 11:19:35 CDT 2017
 CLIENT_RANDOM a5bb83bfa8dda2cb9736e722c8398151424330b81700d3b30abc3fb449638a94 7993af17698b158c71ad765ff38bb9554d963c6ebcda058be9a90694cfa31d7d54c56ec590f3ab4fe732d9cfd99ac3ba
 ```
+
+## Analyzing with Wireshark
+
+### Setup
+In Wireshark preferences, make sure your TLS ports include 8443, if you're capturing local traffic:
+
+![tls_ports](img/tls_ports.png)
+
+Next tell Wireshark where your file is:
+
+![secrets_file](/img/secrets_file.png)
