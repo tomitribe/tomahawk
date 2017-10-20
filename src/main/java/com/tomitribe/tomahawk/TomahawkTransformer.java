@@ -17,7 +17,6 @@ import java.util.Date;
 
 import javassist.ByteArrayClassPath;
 import javassist.CannotCompileException;
-import javassist.ClassClassPath;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtConstructor;
@@ -32,8 +31,6 @@ public class TomahawkTransformer implements ClassFileTransformer { // @formatter
         "com.tomitribe.tomahawk.TomahawkPrinter.queueLogLine(\"RSA\", $0.encrypted, $0.preMaster.getEncoded(), null);";
     private static final String RSA_KEY_EXCHANGE = "sun/security/ssl/RSAClientKeyExchange";
     private static final String HANDSHAKER = "sun/security/ssl/Handshaker";
-    private volatile boolean once = false;
-    private ClassPool globalClassPool = null;
 
     @Override
     public byte[] transform(ClassLoader loader, String className, Class<?> classBeingRedefined, ProtectionDomain protectionDomain,
@@ -43,12 +40,12 @@ public class TomahawkTransformer implements ClassFileTransformer { // @formatter
             if (className != null) {
                 switch (className) {
                     case HANDSHAKER:
-                        once();
                         classDef = instrumentHandshaker(classfileBuffer, className.replaceAll("/", "."));
                         break;
                     case RSA_KEY_EXCHANGE:
-                        once();
                         classDef = instrumentExchange(classfileBuffer, className.replaceAll("/", "."));
+                        break;
+                    default:
                         break;
                 }
             }
@@ -58,21 +55,11 @@ public class TomahawkTransformer implements ClassFileTransformer { // @formatter
         return classDef;
     }
 
-    private void once() throws Exception {
-        if (!once) {
-            if (globalClassPool == null) {
-                globalClassPool = ClassPool.getDefault();
-            }
-            globalClassPool.insertClassPath(new ClassClassPath(TomahawkPrinter.class));
-            once = true;
-        }
-    }
-
     private byte[] instrumentHandshaker(byte[] classfileBuffer, String className) throws Exception {
         logEnhance(className);
         ClassPool cp = insertIntoClassPool(classfileBuffer, className);
         CtClass cc = cp.get(className);
-        appendTo_calculateKeys(HANDSHAKER_INVOKE_LOGGER, cc);
+        appendToCalculateKeys(HANDSHAKER_INVOKE_LOGGER, cc);
         cc.freeze();
         return cc.toBytecode();
     }
@@ -82,9 +69,9 @@ public class TomahawkTransformer implements ClassFileTransformer { // @formatter
         logEnhance(className);
         ClassPool cp = insertIntoClassPool(classfileBuffer, className);
         CtClass cc = cp.get(className);
-        CtClass print = globalClassPool.get(TomahawkPrinter.class.getCanonicalName());
+        CtClass print = cp.get(TomahawkPrinter.class.getCanonicalName());
         cc.setSuperclass(print);
-        appendTo_constructors(RSA_KEY_EXCHANGE_INVOKE_LOGGER, cc);
+        appendToConstructors(RSA_KEY_EXCHANGE_INVOKE_LOGGER, cc);
         cc.freeze();
         return cc.toBytecode();
     }
@@ -94,16 +81,17 @@ public class TomahawkTransformer implements ClassFileTransformer { // @formatter
     }
 
     private ClassPool insertIntoClassPool(byte[] classfileBuffer, String className) {
-        globalClassPool.insertClassPath(new ByteArrayClassPath(className, classfileBuffer));
-        return globalClassPool;
+        ClassPool cp = ClassPool.getDefault();
+        cp.insertClassPath(new ByteArrayClassPath(className, classfileBuffer));
+        return cp;
     }
 
-    private void appendTo_calculateKeys(String code, CtClass cc) throws NotFoundException, CannotCompileException {
+    private void appendToCalculateKeys(String code, CtClass cc) throws NotFoundException, CannotCompileException {
         CtMethod calculateKeysMethod = cc.getDeclaredMethod("calculateKeys");
         calculateKeysMethod.insertAfter(code);
     }
 
-    private void appendTo_constructors(String code, CtClass cc) throws CannotCompileException {
+    private void appendToConstructors(String code, CtClass cc) throws CannotCompileException {
         CtConstructor[] declaredConstructors = cc.getDeclaredConstructors();
         for (CtConstructor con : declaredConstructors) {
             con.insertAfter(code);

@@ -6,11 +6,11 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <!-- <parent> -->
-  <!-- <groupId>com.tomitribe</groupId> -->
-  <!-- <artifactId>tomitribe-parent</artifactId> -->
-  <!-- <version>9</version> -->
-  <!-- </parent> -->
+  <parent>
+    <groupId>com.tomitribe</groupId>
+    <artifactId>tomitribe-parent</artifactId>
+    <version>9</version>
+  </parent>
 
   <groupId>com.tomitribe.security</groupId>
   <artifactId>tomahawk</artifactId>
@@ -113,6 +113,20 @@
       </plugin>
     </plugins>
   </build>
+
+  <distributionManagement>
+    <repository>
+      <id>tomitribe.releases.https</id>
+      <name>Tomitribe Release Distribution Repository</name>
+      <url>https://repository.tomitribe.com/service/local/staging/deploy/maven2</url>
+    </repository>
+
+    <snapshotRepository>
+      <id>tomitribe.snapshots.https</id>
+      <name>Tomitribe Development Snapshot Repository</name>
+      <url>https://repository.tomitribe.com/content/repositories/snapshots-tomitribe</url>
+    </snapshotRepository>
+  </distributionManagement>
 
   <repositories>
     <repository>

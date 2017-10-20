@@ -18,7 +18,10 @@ import java.util.concurrent.TimeUnit;
 
 import javax.net.ssl.SSLSocket;
 
-public class TomahawkPrinter {
+public final class TomahawkPrinter {
+    private TomahawkPrinter() {
+    }
+
     private static final LinkedBlockingQueue<String> logBuffer = new LinkedBlockingQueue<>(250);
 
     static {
